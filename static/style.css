@@ -1,0 +1,72 @@
+body {
+    overflow: hidden;
+    background-image: url("/images/background.webp");
+    background-size: cover;
+}
+
+
+
+.pokemon-stat-container {
+    height: 300px;
+    width: 150px;
+
+    display: flex;
+    background-color: antiquewhite;
+    box-shadow: 0px 0px 10px yellow;
+
+    margin-left: 80%;
+    margin-top: 10%;
+    padding: 15px;
+
+}
+
+.pokemon-stat-text {
+    text-align: left;
+    margin-top: 30px;
+    
+}
+.pokemon-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 500px;
+    width: 500px;
+
+    box-shadow: 0px 0px 10px black;
+    background-color: antiquewhite;
+
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.pokemon-card {
+    text-align: center;
+    
+}
+
+.pokemon-image {
+    height: 270px;
+    width: 200px;
+}
+
+/* Login Form */
+
+.login-container {
+    margin: 0 auto;
+    text-align: center;
+    margin-top: 50px;
+    height: 400px;
+    width: 350px;
+
+    background-color: antiquewhite;
+    background-size: cover;
+
+    border: 1px solid black;
+}
+
+.login-form {
+    display: inline-block;
+    text-align: left;
+}
