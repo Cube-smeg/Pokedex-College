@@ -51,12 +51,55 @@ ensure_default_user()
 
 @app.route('/')
 def home():
-    return redirect('/login')
+    return redirect('/signup')
 
 
 @app.route('/images/<path:filename>')
 def images(filename):
     return send_from_directory('images', filename)
+
+
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+
+    if request.method == 'GET':
+        return render_template('signup.html')
+
+    username = request.form.get('username', '').strip()
+    password = request.form.get('password', '')
+
+    if not username or not password:
+        return 'Username and password are required', 400
+
+    try:
+        db = mysql.connector.connect(
+            host=os.getenv('DB_HOST', '127.0.0.1'),
+            user=os.getenv('DB_USER', 'username'),
+            password=os.getenv('DB_PASSWORD', 'password'),
+            database=os.getenv('DB_NAME', 'loginDB'),
+        )
+    except mysql.connector.Error:
+        return 'Database connection failed', 503
+
+    cursor = db.cursor()
+    try:
+        cursor.execute(
+            'SELECT 1 FROM users WHERE username = %s',
+            (username,),
+        )
+        if cursor.fetchone() is not None:
+            return 'Username already exists', 400
+
+        cursor.execute(
+            'INSERT INTO users (username, password_hash) VALUES (%s, %s)',
+            (username, generate_password_hash(password)),
+        )
+        db.commit()
+    finally:
+        cursor.close()
+        db.close()
+
+    return redirect('/login')
 
 
 @app.route('/index')
