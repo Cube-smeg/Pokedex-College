@@ -5,12 +5,14 @@ from flask import Flask, redirect, render_template, request, send_from_directory
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
+DB_PORT = int(os.getenv('DB_PORT', '3306'))
 
 
 def ensure_default_user():
     try:
         db = mysql.connector.connect(
             host=os.getenv('DB_HOST', '127.0.0.1'),
+            port=DB_PORT,
             user=os.getenv('DB_USER', 'username'),
             password=os.getenv('DB_PASSWORD', 'password'),
             database=os.getenv('DB_NAME', 'loginDB'),
@@ -74,6 +76,7 @@ def signup():
     try:
         db = mysql.connector.connect(
             host=os.getenv('DB_HOST', '127.0.0.1'),
+            port=DB_PORT,
             user=os.getenv('DB_USER', 'username'),
             password=os.getenv('DB_PASSWORD', 'password'),
             database=os.getenv('DB_NAME', 'loginDB'),
@@ -121,6 +124,7 @@ def login():
     try:
         db = mysql.connector.connect(
             host=os.getenv('DB_HOST', '127.0.0.1'),
+            port=DB_PORT,
             user=os.getenv('DB_USER', 'username'),
             password=os.getenv('DB_PASSWORD', 'password'),
             database=os.getenv('DB_NAME', 'loginDB'),
@@ -131,8 +135,7 @@ def login():
     cursor = db.cursor()
     try:
         cursor.execute(
-            'SELECT password_hash FROM users WHERE username = %s',
-            (username,),
+            'SELECT password_hash FROM users WHERE username = %s', (username,)
         )
         user = cursor.fetchone()
     finally:

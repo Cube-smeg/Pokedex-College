@@ -1,10 +1,67 @@
-body {
+html, body {
     overflow: hidden;
     background-image: url("/images/background.webp");
     background-size: cover;
+    height: 100%;
+    margin: 0;
+
+    flex-direction: column;
+    display: flex;
 }
 
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
+.randomize-button {
+    position: fixed;
+    top: 5rem;
+    right: 1rem;
+    z-index: 2;
+    display: flex;
+    gap: 8px;
+    width: min(300px, calc(100vw - 32px));
+    box-sizing: border-box;
+    margin: 0;
+    background-color: rgba(102, 102, 102, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+.Pokemon-Search {
+    position: fixed;
+    top: 5rem;
+    left: 50%;
+    z-index: 2;
+    display: flex;
+    gap: 8px;
+    width: min(300px, calc(100vw - 32px));
+    box-sizing: border-box;
+    margin: 0;
+    background-color: rgba(102, 102, 102, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    transform: translateX(-50%);
+}
+
+.Pokemon-Search input {
+    min-width: 0;
+    flex: 1;
+}
+
+#pokemon-search-form {
+    display: flex;
+    gap: 8px;
+}
+
+#search-message {
+    margin: 8px 0 0;
+}
 
 .pokemon-stat-container {
     height: 300px;
