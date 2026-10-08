@@ -5,6 +5,12 @@ from flask import Flask, redirect, render_template, request, send_from_directory
 from werkzeug.security import check_password_hash, generate_password_hash
 
 app = Flask(__name__)
+
+app.config["SECRET_KEY"] = "SuperSuperDuperSecret"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+app.config["SESSION_COOKIE_SECURE"] = True
+
 DB_PORT = int(os.getenv('DB_PORT', '3306'))
 
 
