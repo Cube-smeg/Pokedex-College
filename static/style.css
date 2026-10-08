@@ -9,6 +9,14 @@ html, body {
     display: flex;
 }
 
+header {
+    margin: auto;
+}
+
+footer {
+    margin: auto;
+}
+
 main {
     flex: 1;
     display: flex;
@@ -19,9 +27,9 @@ main {
 .randomize-button {
     position: fixed;
     top: 5rem;
-    right: 1rem;
     z-index: 2;
     display: flex;
+    align-items: center;
     gap: 8px;
     width: min(300px, calc(100vw - 32px));
     box-sizing: border-box;
@@ -32,12 +40,21 @@ main {
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
 }
 
+.randomize-button-left {
+    left: 1rem;
+}
+
+.randomize-button-right {
+    right: 1rem;
+}
+
 .Pokemon-Search {
     position: fixed;
-    top: 5rem;
+    top: calc(50% - 310px);
     left: 50%;
-    z-index: 2;
+    z-index: 3;
     display: flex;
+    flex-direction: column;
     gap: 8px;
     width: min(300px, calc(100vw - 32px));
     box-sizing: border-box;
@@ -47,6 +64,23 @@ main {
     border-radius: 5px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
     transform: translateX(-50%);
+    transition: transform 300ms ease;
+}
+
+.search-bar-left.moved-left {
+    transform: translate(calc(-50% - 300px), 0);
+}
+
+.comparison-search {
+    display: none;
+}
+
+.comparison-search.is-visible {
+    display: flex;
+}
+
+.comparison-search.moved-right {
+    transform: translate(calc(-50% + 300px), 0);
 }
 
 .Pokemon-Search input {
@@ -54,27 +88,52 @@ main {
     flex: 1;
 }
 
-#pokemon-search-form {
+.pokemon-search-form {
     display: flex;
     gap: 8px;
 }
 
-#search-message {
+.search-message {
     margin: 8px 0 0;
+}
+
+#Compare-pokemon {
+    display: none;
+}
+
+#pokemon-stat-text-to-compare {
+    display: none;
+}
+
+#pokemon-card-to-compare {
+    display: none
+}
+
+#pokemon-container-to-compare {
+    display: none;
+}
+
+.comparison-container {
+    display: none;
+}
+
+.comparison-container.is-visible {
+    display: flex;
 }
 
 .pokemon-stat-container {
     height: 300px;
-    width: 150px;
+    width: 130px;
 
     display: flex;
     background-color: antiquewhite;
-    box-shadow: 0px 0px 10px yellow;
 
-    margin-left: 80%;
-    margin-top: 10%;
+    position: absolute;
+    top: 50%;
+    left: 0;
     padding: 15px;
-
+    transform: translateY(-50%);
+    z-index: 1;
 }
 
 .pokemon-stat-text {
@@ -96,11 +155,37 @@ main {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+    transition: transform 300ms ease;
+}
+
+.pokemon-container.moved {
+    transform: translate(calc(-50% - 300px), -50%);
+}
+
+.pokemon-container.moved-right {
+    transform: translate(calc(-50% + 300px), -50%);
 }
 
 .pokemon-card {
     text-align: center;
     
+}
+
+.compare-button-standalone {
+    position: fixed;
+    top: calc(50% + 250px);
+    left: 50%;
+    z-index: 4;
+    transform: translateX(-50%);
+}
+
+.compare-button-standalone button {
+    padding: 10px 14px;
+    border-radius: 5px;
+    border: 1px solid black;
+    background-color: antiquewhite;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
 }
 
 .pokemon-image {

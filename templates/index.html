@@ -2,7 +2,18 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <div class="pokemon-container">
+    <div class="pokemon-container" id="compare-box">
+        <div class="pokemon-stat-container" id="pokemon-stat-container">
+            <div class="pokemon-stat-text">
+                <p>HP: <span class="health">Loading...</span></p>
+                <p>ATK: <span class="attack">Loading...</span></p>
+                <p>SP.ATK: <span class="spec-atk">Loading...</span></p>
+                <p>DEF: <span class="defence">Loading...</span></p>
+                <p>SP.DEF: <span class="spec-def">Loading...</span></p>
+                <p>SPD: <span class="speed">Loading...</span></p>
+            </div>
+        </div>
+
         <div class="pokemon-card">
             <h1 class="pokemon-name">Pokemon name</h1>
             <img class="pokemon-image" src="{{ url_for('images', filename='placeholder-espion.png') }}">
@@ -13,25 +24,57 @@
         </div>
     </div>
 
-    <div class="pokemon-stat-container">
-        <div class="pokemon-stat-text">
-            <p>HP: <span class="health">Loading...</span></p>
-            <p>ATK: <span class="attack">Loading...</span></p>
-            <p>SP.ATK: <span class="spec-atk">Loading...</span></p>
-            <p>DEF: <span class="defence">Loading...</span></p>
-            <p>SP.DEF: <span class="spec-def">Loading...</span></p>
-            <p>SPD: <span class="speed">Loading...</span></p>
+    <div class="compare-button-standalone">
+        <button id="compare-button" type="button">Press here to compare pokemon...</button>
+    </div>
+
+    <div class="Pokemon-Search search-bar-left" id="left-search">
+        <form class="pokemon-search-form" id="pokemon-search-form-left">
+            <input type="text" id="pokemon-search-left" placeholder="Search for a Pokemon..." aria-label="Pokemon name">
+            <button type="submit">Search</button>
+        </form>
+        <p class="search-message" id="search-message-left" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="randomize-button randomize-button-left" id="randomize-left">
+        <button id="randomize-button-left" type="button">Randomize</button>
+    </div>
+
+    <div class="randomize-button randomize-button-right">
+        <button id="randomize-button" type="button">Randomize</button>
+    </div>
+
+    <!-- Comparison Section -->
+
+
+    <div class="Pokemon-Search comparison-search" id="right-search" aria-hidden="true">
+        <form class="pokemon-search-form" id="pokemon-search-form-right">
+            <input type="text" id="pokemon-search-right" placeholder="Search for a Pokemon..." aria-label="Pokemon name">
+            <button type="submit">Search</button>
+        </form>
+        <p class="search-message" id="search-message-right" role="status" aria-live="polite"></p>
+    </div>
+
+    <div class="pokemon-container comparison-container" id="comparison-box" aria-hidden="true">
+        <div class="pokemon-stat-container comparison-stat-container">
+            <div class="pokemon-stat-text">
+                <p>HP: <span class="health">Loading...</span></p>
+                <p>ATK: <span class="attack">Loading...</span></p>
+                <p>SP.ATK: <span class="spec-atk">Loading...</span></p>
+                <p>DEF: <span class="defence">Loading...</span></p>
+                <p>SP.DEF: <span class="spec-def">Loading...</span></p>
+                <p>SPD: <span class="speed">Loading...</span></p>
+            </div>
+        </div>
+
+        <div class="pokemon-card comparison-card">
+            <h1 class="pokemon-name">Pokemon name</h1>
+            <img class="pokemon-image" src="{{ url_for('images', filename='placeholder-espion.png') }}">
+            <p>Index Num: <span class="pokemon-id">—</span></p>
+            <p>Type: <span class="pokemon-types">—</span></p>
+            <p>Strengths <span class="Strengths">Loading...</span></p>
+            <p>Weaknesses <span class="Weaknesses">Loading...</span></p>
         </div>
     </div>
 
-    <div class="Pokemon-Search">
-        <form id="pokemon-search-form">
-            <input type="text" id="pokemon-search" placeholder="Search for a Pokemon..." aria-label="Pokemon name">
-            <button type="submit">Search</button>
-        </form>
-        <p id="search-message" role="status" aria-live="polite"></p>
-    </div>
-    <div class="randomize-button">
-        <button id="randomize-button" type="button">Randomize</button>
-    </div>
 {% endblock %}
