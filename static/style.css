@@ -1,7 +1,7 @@
 html, body {
     overflow: hidden;
     background-image: url("/images/background.webp");
-    background-size: cover;
+    background-size:contain;
     height: 100%;
     margin: 0;
 
@@ -23,6 +23,9 @@ main {
     justify-content: center;
     align-items: center;
 }
+
+
+
 
 .randomize-button {
     position: fixed;
@@ -136,6 +139,57 @@ main {
     z-index: 1;
 }
 
+
+.battle-button-standalone {
+    position: fixed;
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+}
+
+.battle-move-left {
+    transform: translateX(300px);
+    transition: transform 200ms ease;
+}
+
+.battle-move-right {
+    transform: translateX(-300px);
+    transition: transform 200ms ease;
+}
+
+.explosion-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 200px;
+    height: 200px;
+    background-size: cover;
+    z-index: 6;
+    pointer-events: none;
+}
+
+.create-explosion {
+    animation: explosion 3s steps(3) forwards;
+}
+
+@keyframes explosion  {
+    0% {
+        image-rendering: pixelated;
+        background-image: url("/images/explode-1.png");
+    }
+    50% {
+        image-rendering: pixelated;
+        background-image: url("/images/explode-2.png");
+    }
+    100% {
+        image-rendering: pixelated;
+        background-image: url("/images/explode-3.png");
+    }
+}
+
+
 .pokemon-stat-text {
     text-align: left;
     margin-top: 30px;
@@ -156,6 +210,7 @@ main {
     left: 50%;
     transform: translate(-50%, -50%);
     transition: transform 300ms ease;
+    z-index: 6;
 }
 
 .pokemon-container.moved {

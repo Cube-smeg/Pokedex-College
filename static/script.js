@@ -22,6 +22,27 @@ function displayPokemon(data, container) {
     const typeElements = container.querySelectorAll(".pokemon-types");
     const imageElements = container.querySelectorAll(".pokemon-image");
 
+    const mariadb = require('./db.js');
+
+    //get winrate and games played from the database
+    mariadb.pool.getConnection().then((conn) => {
+        conn.query("SELECT winrate, games FROM pokemon_stats WHERE name = ?", [data.name.toLowerCase()]).then((rows) => {
+            if (rows.length > 0) {
+                const { winrate, games } = rows[0];
+                const winrateElements = container.querySelectorAll(".Strengths");
+                const gamesElements = container.querySelectorAll(".Weaknesses");
+
+                winrateElements.forEach((element) => {
+                    element.textContent = winrate;
+                });
+                gamesElements.forEach((element) => {
+                    element.textContent = games;
+                });
+            }
+        });
+        conn.release();
+    });
+
     nameElements.forEach((element) => {
         element.textContent = data.name.toUpperCase();
     });
@@ -149,3 +170,59 @@ rightRandomizeButton?.addEventListener("click", () => {
     );
 });
 
+
+
+const battleButton = document.getElementById("battle-button");
+battleButton?.addEventListener("click", () => {
+    const leftPokemonName = document.querySelector("#compare-box .pokemon-name").textContent.toLowerCase();
+    const rightPokemonName = document.querySelector("#comparison-box .pokemon-name").textContent.toLowerCase();
+
+    if (!leftPokemonName || !rightPokemonName) {
+        alert("Please select two Pokemon to battle.");
+        return;
+    }
+
+    const leftPokemonUrl = `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(leftPokemonName)}`;
+    const rightPokemonUrl = `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(rightPokemonName)}`;
+
+    const leftpokemonimage = document.getElementById("left-pokemon-image");
+    const rightpokemonimage = document.getElementById("right-pokemon-image");
+    const explosionContainer = document.getElementById("explosion-container");
+    if (!leftpokemonimage || !rightpokemonimage) {
+        alert("Error: Pokemon images not found.");
+        return;
+    }
+    
+    //moving images
+    leftpokemonimage.classList.toggle("battle-move-left");
+    rightpokemonimage.classList.toggle("battle-move-right");
+
+    // explosion effect  
+    explosionContainer.classList.add("create-explosion");
+
+    // check who wins and show the user, maybe make it add to database to show winrates later on
+    Promise.all([fetchData(leftPokemonUrl), fetchData(rightPokemonUrl)])
+        .then(([leftData, rightData]) => {
+            const leftTotalStats = leftData.stats.reduce((sum, stat) => sum + stat.base_stat, 0);
+            const rightTotalStats = rightData.stats.reduce((sum, stat) => sum + stat.base_stat, 0);
+
+            let resultMessage;
+            if (leftTotalStats > rightTotalStats) {
+                resultMessage = `${leftData.name.toUpperCase()} wins!`;
+            } else if (leftTotalStats < rightTotalStats) {
+                resultMessage = `${rightData.name.toUpperCase()} wins!`;
+            } else {
+                resultMessage = "It's a tie!";
+            }
+
+            alert(resultMessage);
+        })
+        .catch((error) => {
+            alert(`Error fetching Pokemon data: ${error.message}`);
+        });
+
+
+
+
+    
+});

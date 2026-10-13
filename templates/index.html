@@ -16,11 +16,11 @@
 
         <div class="pokemon-card">
             <h1 class="pokemon-name">Pokemon name</h1>
-            <img class="pokemon-image" src="{{ url_for('images', filename='placeholder-espion.png') }}">
+            <img class="pokemon-image" id="left-pokemon-image" src="{{ url_for('images', filename='placeholder-espion.png') }}">
             <p>Index Num: <span class="pokemon-id">—</span></p>
             <p>Type: <span class="pokemon-types">—</span></p>
-            <p>Strengths <span class="Strengths">Loading...</span></p>
-            <p>Weaknesses <span class="Weaknesses">Loading...</span></p>
+            <p>Winrate: <span class="Strengths">Loading...</span></p>
+            <p>Games: <span class="Weaknesses">Loading...</span></p>
         </div>
     </div>
 
@@ -69,12 +69,22 @@
 
         <div class="pokemon-card comparison-card">
             <h1 class="pokemon-name">Pokemon name</h1>
-            <img class="pokemon-image" src="{{ url_for('images', filename='placeholder-espion.png') }}">
+            <img class="pokemon-image" id="right-pokemon-image" src="{{ url_for('images', filename='placeholder-espion.png') }}">
             <p>Index Num: <span class="pokemon-id">—</span></p>
             <p>Type: <span class="pokemon-types">—</span></p>
-            <p>Strengths <span class="Strengths">Loading...</span></p>
-            <p>Weaknesses <span class="Weaknesses">Loading...</span></p>
+            <p>Winrate: <span class="Strengths">Loading...</span></p>
+            <p>Games: <span class="Weaknesses">Loading...</span></p>
         </div>
+    </div>
+
+    <!--Battle Section-->
+
+    <div class="battle-button-standalone">
+        <button id="battle-button" type="button">Press here to battle pokemon...</button>
+    </div>
+
+    <div class="explosion-container" id="explosion-container">
+        <div class="explosion" id="explosion"></div>
     </div>
 
 {% endblock %}
