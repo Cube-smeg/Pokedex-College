@@ -22,25 +22,8 @@ function displayPokemon(data, container) {
     const typeElements = container.querySelectorAll(".pokemon-types");
     const imageElements = container.querySelectorAll(".pokemon-image");
 
-    const mariadb = require('./db.js');
-
-    //get winrate and games played from the database
-    mariadb.pool.getConnection().then((conn) => {
-        conn.query("SELECT winrate, games FROM pokemon_stats WHERE name = ?", [data.name.toLowerCase()]).then((rows) => {
-            if (rows.length > 0) {
-                const { winrate, games } = rows[0];
-                const winrateElements = container.querySelectorAll(".Strengths");
-                const gamesElements = container.querySelectorAll(".Weaknesses");
-
-                winrateElements.forEach((element) => {
-                    element.textContent = winrate;
-                });
-                gamesElements.forEach((element) => {
-                    element.textContent = games;
-                });
-            }
-        });
-        conn.release();
+    container.querySelectorAll(".Strengths, .Weaknesses").forEach((element) => {
+        element.textContent = "—";
     });
 
     nameElements.forEach((element) => {
@@ -102,7 +85,7 @@ const leftSearch = document.getElementById("left-search");
 const rightSearch = document.getElementById("right-search");
 const compareButton = document.getElementById("compare-button");
 
-compareButton.addEventListener("click", () => {
+compareButton?.addEventListener("click", () => {
     originalBox.classList.toggle("moved");
     comparisonBox.classList.toggle("is-visible");
     comparisonBox.classList.toggle("moved-right");
@@ -125,6 +108,7 @@ function registerSearch(formId, inputId, messageId, container) {
             showMessage(message, "Enter a Pokemon name to search.");
             return;
         }
+
         loadPokemon(
             `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(pokemonName)}`,
             container,
@@ -147,6 +131,7 @@ registerSearch(
     "search-message-right",
     comparisonBox
 );
+
 
 // Randomize functionality
 
@@ -226,3 +211,85 @@ battleButton?.addEventListener("click", () => {
 
     
 });
+
+// Team builder selection
+
+document.querySelectorAll(".team-pokemon-search").forEach((form) => {
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const input = form.querySelector("input");
+        const slot = form.closest(".team-slot");
+        const message = slot.querySelector(".team-search-message");
+        const pokemonName = input.value.trim().toLowerCase();
+
+        if (!pokemonName) {
+            showMessage(message, "Enter a Pokemon name to search.");
+            return;
+        }
+
+        showMessage(message, "Searching...");
+        try {
+            const data = await fetchData(
+                `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(pokemonName)}`
+            );
+            const image = slot.querySelector(".team-pokemon-image");
+            const name = slot.querySelector(".pokemon-name");
+            const artwork = data.sprites.other?.["official-artwork"]?.front_default
+                || data.sprites.front_default;
+
+            name.textContent = data.name.toUpperCase();
+            if (artwork) {
+                image.src = artwork;
+            }
+            image.alt = data.name;
+            showMessage(message, "");
+        } catch (error) {
+            showMessage(message, error.message);
+        }
+    });
+});
+
+
+const saveTeamButton = document.getElementById("finalize-team-button");
+saveTeamButton?.addEventListener("click", async () => {
+    const teamData = { pokemon: [] };
+    document.querySelectorAll(".team-slot").forEach((slot) => {
+        const name = slot.querySelector(".pokemon-name").textContent.trim().toLowerCase();
+        if (name && name !== "—") {
+            teamData.pokemon.push(name);
+        }
+    });
+
+    if (teamData.pokemon.length !== 6) {
+        alert("Please select 6 Pokemon for your team.");
+        return;
+    };
+
+    if (teamData.pokemon.length !== new Set(teamData.pokemon).size) {
+        alert("Duplicate Pokemon are not allowed in the team.");
+        return;
+    }
+
+    //Save the pokemon
+
+    try {
+        const response = await fetch("/save_team", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(teamData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Failed to save team.");
+        }
+
+        alert("Team saved successfully!");
+    } catch (error) {
+        alert(`Error saving team: ${error.message}`);
+    }
+});
+

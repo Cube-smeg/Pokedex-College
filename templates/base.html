@@ -6,7 +6,7 @@
     <title>PokeDex</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <header>
         <h1>PokeDex</h1>
     </header>
