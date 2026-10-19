@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block body_class %}teambuilder{% endblock %}
+
+{% block content %}
+
+<section class="teambuilder-container">
+    <div class="teambuilder-header">
+        <h1>Team Builder</h1>
+        <p>Build your pokemon team</p>
+    </div>
+
+    <div class="team-selection">
+        <div class="team-slot" id="team-slot-1">
+            <div class="team-pokemon-artwork">
+                <img class="team-pokemon-image" id="team-slot-1-image" src="{{ url_for('images', filename='placeholder-espion.png') }}" alt="Pokemon placeholder">
+            </div>
+            <p class="team-pokemon-name">Pokemon: <span class="pokemon-name">—</span></p>
+            <form class="team-pokemon-search" id="team-search-form-1">
+                <label class="visually-hidden" for="team-search-1">Search Pokemon for team slot 1</label>
+                <input id="team-search-1" name="pokemon" type="search" placeholder="Search Pokemon..." required>
+                <button type="submit">Select Pokemon</button>
+            </form>
+            <p class="team-search-message" id="team-message-1" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="team-slot" id="team-slot-2">
+            <div class="team-pokemon-artwork">
+                <img class="team-pokemon-image" id="team-slot-2-image" src="{{ url_for('images', filename='placeholder-espion.png') }}" alt="Pokemon placeholder">
+            </div>
+            <p class="team-pokemon-name">Pokemon: <span class="pokemon-name">—</span></p>
+            <form class="team-pokemon-search" id="team-search-form-2">
+                <label class="visually-hidden" for="team-search-2">Search Pokemon for team slot 2</label>
+                <input id="team-search-2" name="pokemon" type="search" placeholder="Search Pokemon..." required>
+                <button type="submit">Select Pokemon</button>
+            </form>
+            <p class="team-search-message" id="team-message-2" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="team-slot" id="team-slot-3">
+            <div class="team-pokemon-artwork">
+                <img class="team-pokemon-image" id="team-slot-3-image" src="{{ url_for('images', filename='placeholder-espion.png') }}" alt="Pokemon placeholder">
+            </div>
+            <p class="team-pokemon-name">Pokemon: <span class="pokemon-name">—</span></p>
+            <form class="team-pokemon-search" id="team-search-form-3">
+                <label class="visually-hidden" for="team-search-3">Search Pokemon for team slot 3</label>
+                <input id="team-search-3" name="pokemon" type="search" placeholder="Search Pokemon..." required>
+                <button type="submit">Select Pokemon</button>
+            </form>
+            <p class="team-search-message" id="team-message-3" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="team-slot" id="team-slot-4">
+            <div class="team-pokemon-artwork">
+                <img class="team-pokemon-image" id="team-slot-4-image" src="{{ url_for('images', filename='placeholder-espion.png') }}" alt="Pokemon placeholder">
+            </div>
+            <p class="team-pokemon-name">Pokemon: <span class="pokemon-name">—</span></p>
+            <form class="team-pokemon-search" id="team-search-form-4">
+                <label class="visually-hidden" for="team-search-4">Search Pokemon for team slot 4</label>
+                <input id="team-search-4" name="pokemon" type="search" placeholder="Search Pokemon..." required>
+                <button type="submit">Select Pokemon</button>
+            </form>
+            <p class="team-search-message" id="team-message-4" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="team-slot" id="team-slot-5">
+            <div class="team-pokemon-artwork">
+                <img class="team-pokemon-image" id="team-slot-5-image" src="{{ url_for('images', filename='placeholder-espion.png') }}" alt="Pokemon placeholder">
+            </div>
+            <p class="team-pokemon-name">Pokemon: <span class="pokemon-name">—</span></p>
+            <form class="team-pokemon-search" id="team-search-form-5">
+                <label class="visually-hidden" for="team-search-5">Search Pokemon for team slot 5</label>
+                <input id="team-search-5" name="pokemon" type="search" placeholder="Search Pokemon..." required>
+                <button type="submit">Select Pokemon</button>
+            </form>
+            <p class="team-search-message" id="team-message-5" role="status" aria-live="polite"></p>
+        </div>
+
+        <div class="team-slot" id="team-slot-6">
+            <div class="team-pokemon-artwork">
+                <img class="team-pokemon-image" id="team-slot-6-image" src="{{ url_for('images', filename='placeholder-espion.png') }}" alt="Pokemon placeholder">
+            </div>
+            <p class="team-pokemon-name">Pokemon: <span class="pokemon-name">—</span></p>
+            <form class="team-pokemon-search" id="team-search-form-6">
+                <label class="visually-hidden" for="team-search-6">Search Pokemon for team slot 6</label>
+                <input id="team-search-6" name="pokemon" type="search" placeholder="Search Pokemon..." required>
+                <button type="submit">Select Pokemon</button>
+            </form>
+            <p class="team-search-message" id="team-message-6" role="status" aria-live="polite"></p>
+        </div>
+    </div>
+
+    <div class="finalize-team">
+        <button id="finalize-team-button" type="button">Finalize Team</button>
+    </div>
+
+    <div class="add-pokemon-button">
+        <button id="add-pokemon-button" type="button">Add Pokemon to Team</button>
+    </div>
+</section>
+
+
+{% endblock %}
