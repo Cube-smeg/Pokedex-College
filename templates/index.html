@@ -2,6 +2,14 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
+    <nav class="navigation">
+        <ul>
+            <li><a href="{{ url_for('teambuilder') }}">Team Builder</a></li>
+            
+        </ul>
+    </nav>
+
     <div class="pokemon-container" id="compare-box">
         <div class="pokemon-stat-container" id="pokemon-stat-container">
             <div class="pokemon-stat-text">

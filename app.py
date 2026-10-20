@@ -1,7 +1,6 @@
 import os
 
 import mysql.connector
-# Import Flask's session object when implementing the session steps noted below.
 
 from flask import Flask, redirect, render_template, request, send_from_directory, session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -9,13 +8,13 @@ import json
 
 app = Flask(__name__)
 
-# Flask's session is signed using SECRET_KEY. For a real deployment, load a long,
-# private key from an environment variable rather than keeping a literal in source.
-app.config["SECRET_KEY"] = "SuperSuperDuperSecret"
-# These cookie settings apply to the login session cookie; Secure requires HTTPS.
+# Configure a private FLASK_SECRET_KEY in deployed environments.
+app.config["SECRET_KEY"] = os.getenv("FLASK_SECRET_KEY", "dev-only-change-me")
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
-app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_SECURE"] = os.getenv(
+    "SESSION_COOKIE_SECURE", "false"
+).lower() in {"1", "true", "yes"}
 
 
 
@@ -148,9 +147,6 @@ def login():
 
     cursor = db.cursor()
     try:
-        # To put the authenticated account in the session, fetch its database ID
-        # along with the password hash (for example, SELECT id, password_hash).
-        # Keep the row indexes below aligned with the columns selected here.
         cursor.execute(
             'SELECT id, password_hash FROM users WHERE username = %s', (username,)
         )
@@ -159,12 +155,7 @@ def login():
         cursor.close()
         db.close()
 
-    # After changing the SELECT to return id first and password_hash second, change
-    # this hash check to use user[1]. Only after verification succeeds, clear any
-    # old session values and store the database ID, e.g. session['user_id'] = user[0].
-    # Never store the submitted password or use a client-provided ID. Then redirect.
     if user and check_password_hash(user[1], password):
-        # Clear any old session values and store the database ID
         session.clear()
         session['user_id'] = user[0]
 
@@ -172,10 +163,6 @@ def login():
 
     
     return 'Invalid username or password', 401
-
-# Add a logout route near the login route: clear the session and redirect to the
-# login page so this account is no longer treated as signed in.
-
 
 @app.route('/logout')
 def logout():
@@ -191,9 +178,6 @@ def teambuilder():
 
 @app.route('/save_team', methods=['POST'])
 def save_team():
-    # Before saving, require session['user_id']; return an unauthorized response
-    # when it is absent. Use that session value as saved_teams.user_id, never an ID
-    # supplied in the request JSON. Apply the same check to the future load endpoint.
     data = request.get_json(silent=True)
 
     if not isinstance(data, dict):
@@ -223,11 +207,10 @@ def save_team():
 
     team_data = {'pokemon': pokemon}
 
-    userID = session.get('user_id')
+    user_id = session.get('user_id')
 
-    if not userID:
+    if not user_id:
         return {'message': 'Unauthorized: user not logged in'}, 401
-    
 
     try:
             db = mysql.connector.connect(
@@ -245,23 +228,22 @@ def save_team():
         cursor = db.cursor()
         cursor.execute(
             "SELECT 1 FROM saved_teams WHERE user_id = %s",
-            (userID,),
+            (user_id,),
         )
 
         if cursor.fetchone() is not None:
             cursor.execute(
                 "UPDATE saved_teams SET team_data = %s WHERE user_id = %s",
-                (json.dumps(team_data), userID),
+                (json.dumps(team_data), user_id),
             )
         else:
             cursor.execute(
                 'INSERT INTO saved_teams (user_id, team_data) VALUES (%s, %s)',
-                (userID, json.dumps(team_data)),
+                (user_id, json.dumps(team_data)),
             )
         db.commit()
 
     except mysql.connector.Error:
-        #reset db incase of error 
         db.rollback()
         return {'message': 'Could not save the team because of a database error'}, 503
 
@@ -272,5 +254,53 @@ def save_team():
 
     return {'message': 'Team saved successfully'}, 200
 
-    # TODO: loading the team back from the database for the current user, if any, and returning it as JSON.
-   
+
+@app.route('/load_team', methods=['GET'])
+def load_team():
+    user_id = session.get('user_id')
+    if not user_id:
+        return {"message": "User not logged in."}, 401
+
+    try:
+        db = mysql.connector.connect(
+            host=os.getenv('DB_HOST', '127.0.0.1'),
+            port=DB_PORT,
+            user=os.getenv('DB_USER', 'username'),
+            password=os.getenv('DB_PASSWORD', 'password'),
+            database=os.getenv('DB_NAME', 'loginDB'),
+        )
+    except mysql.connector.Error:
+        return {'message': 'Database connection failed'}, 503
+
+    cursor = None
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT team_data FROM saved_teams WHERE user_id = %s",
+            (user_id,),
+        )
+        row = cursor.fetchone()
+
+        if row is None:
+            return {"message": "Team does not exist"}, 404
+
+        team_data = row[0]
+        if isinstance(team_data, str):
+            team_data = json.loads(team_data)
+        if not isinstance(team_data, dict) or not isinstance(
+            team_data.get("pokemon"), list
+        ):
+            app.logger.error("Saved team has an invalid format for user %s", user_id)
+            return {"message": "Saved team data is invalid"}, 500
+
+        return team_data, 200
+    except mysql.connector.Error:
+        app.logger.exception("Could not load saved team for user %s", user_id)
+        return {'message': 'Could not load the team because of a database error'}, 503
+    except (TypeError, ValueError):
+        app.logger.exception("Saved team JSON is invalid for user %s", user_id)
+        return {'message': 'Saved team data is invalid'}, 500
+    finally:
+        if cursor is not None:
+            cursor.close()
+        db.close()

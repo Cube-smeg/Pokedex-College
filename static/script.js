@@ -86,6 +86,9 @@ const rightSearch = document.getElementById("right-search");
 const compareButton = document.getElementById("compare-button");
 
 compareButton?.addEventListener("click", () => {
+    if (!originalBox || !comparisonBox || !leftSearch || !rightSearch) {
+        return;
+    }
     originalBox.classList.toggle("moved");
     comparisonBox.classList.toggle("is-visible");
     comparisonBox.classList.toggle("moved-right");
@@ -159,10 +162,11 @@ rightRandomizeButton?.addEventListener("click", () => {
 
 const battleButton = document.getElementById("battle-button");
 battleButton?.addEventListener("click", () => {
-    const leftPokemonName = document.querySelector("#compare-box .pokemon-name").textContent.toLowerCase();
-    const rightPokemonName = document.querySelector("#comparison-box .pokemon-name").textContent.toLowerCase();
+    const leftPokemonName = document.querySelector("#compare-box .pokemon-name")?.textContent.trim().toLowerCase();
+    const rightPokemonName = document.querySelector("#comparison-box .pokemon-name")?.textContent.trim().toLowerCase();
 
-    if (!leftPokemonName || !rightPokemonName) {
+    if (!leftPokemonName || !rightPokemonName
+        || leftPokemonName === "pokemon name" || rightPokemonName === "pokemon name") {
         alert("Please select two Pokemon to battle.");
         return;
     }
@@ -173,7 +177,7 @@ battleButton?.addEventListener("click", () => {
     const leftpokemonimage = document.getElementById("left-pokemon-image");
     const rightpokemonimage = document.getElementById("right-pokemon-image");
     const explosionContainer = document.getElementById("explosion-container");
-    if (!leftpokemonimage || !rightpokemonimage) {
+    if (!leftpokemonimage || !rightpokemonimage || !explosionContainer) {
         alert("Error: Pokemon images not found.");
         return;
     }
@@ -206,10 +210,6 @@ battleButton?.addEventListener("click", () => {
             alert(`Error fetching Pokemon data: ${error.message}`);
         });
 
-
-
-
-    
 });
 
 // Team builder selection
@@ -283,7 +283,7 @@ saveTeamButton?.addEventListener("click", async () => {
         });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             throw new Error(errorData.message || "Failed to save team.");
         }
 
@@ -293,3 +293,60 @@ saveTeamButton?.addEventListener("click", async () => {
     }
 });
 
+
+// Load a saved team when the button is pressed.
+const loadTeamButton = document.getElementById("load_team_button");
+loadTeamButton?.addEventListener("click", () => {
+    loadTeam();
+});
+
+async function loadTeam() {
+    try {
+        // Fetch the saved team data from the server
+        const response = await fetch("/load_team", {
+            method: "GET",
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || "Failed to load team.");
+        }
+
+        const teamData = await response.json();
+        if (!teamData || !Array.isArray(teamData.pokemon)) {
+            throw new Error("The server returned an invalid team.");
+        }
+
+        const slots = document.querySelectorAll(".team-slot");
+
+        teamData.pokemon.forEach((pokemonName, index) => {
+            if (index < slots.length) {
+                const slot = slots[index];
+                const image = slot.querySelector(".team-pokemon-image");
+                const name = slot.querySelector(".pokemon-name");
+                if (!image || !name) {
+                    console.error(`Team slot ${index + 1} is missing its image or name element.`);
+                    return;
+                }
+                const pokemonUrl = `https://pokeapi.co/api/v2/pokemon/${encodeURIComponent(pokemonName)}`;
+
+                fetchData(pokemonUrl)
+                    .then((data) => {
+                        const artwork = data.sprites.other?.["official-artwork"]?.front_default
+                            || data.sprites.front_default;
+                        name.textContent = data.name.toUpperCase();
+                        if (artwork) {
+                            image.src = artwork;
+                        }
+                        image.alt = data.name;
+                    })
+                    .catch((error) => {
+                        console.error(`Error loading Pokemon ${pokemonName}: ${error.message}`);
+                    });
+            }
+        });
+    } catch (error) {
+        console.error(`Error loading team: ${error.message}`);
+        alert(`Error loading team: ${error.message}`);
+    }
+}

@@ -42,6 +42,19 @@ body.teambuilder main {
     padding: 1.5rem;
 }
 
+
+.navigation {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: rgba(28, 32, 38, 0.94);
+    color: #fff;
+    padding: 1rem;
+    box-sizing: border-box;
+    z-index: 10;
+}
+
 .teambuilder-container {
     width: min(100%, 1000px);
     margin: 0 auto;
