@@ -4,6 +4,19 @@
 
 {% block content %}
 
+<!-- Main navigation -->
+<nav class="navigation" aria-label="Main navigation">
+    <div class="navigation-inner">
+        <a class="navigation-brand" href="{{ url_for('index') }}">Pokédex</a>
+        <div class="navigation-links">
+            <a class="navigation-link" href="{{ url_for('index') }}">Pokémon</a>
+            <a class="navigation-link navigation-link-active" href="{{ url_for('teambuilder') }}" aria-current="page">Team Builder</a>
+            <button class="navigation-logout" id="logout" type="button">Log out</button>
+        </div>
+    </div>
+</nav>
+
+<!-- Team selection -->
 <section class="teambuilder-container">
     <div class="teambuilder-header">
         <h1>Team Builder</h1>

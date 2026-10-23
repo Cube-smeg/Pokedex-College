@@ -2,7 +2,7 @@ import os
 
 import mysql.connector
 
-from flask import Flask, redirect, render_template, request, send_from_directory, session
+from flask import Flask, redirect, render_template, request, send_from_directory, session, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 import json
 
@@ -254,6 +254,126 @@ def save_team():
 
     return {'message': 'Team saved successfully'}, 200
 
+@app.route("/add_loss", methods=["POST"])
+def add_loss():
+    payload = request.get_json(silent=True)
+    pokemon_name = payload.get("pokemon_name") if isinstance(payload, dict) else None
+    if not isinstance(pokemon_name, str) or not pokemon_name.strip():
+        return {"message": "Pokemon name is required"}, 400
+    pokemon_name = pokemon_name.strip().lower()
+    try:
+            db = mysql.connector.connect(
+                host=os.getenv('DB_HOST', '127.0.0.1'),
+                port=DB_PORT,
+                user=os.getenv('DB_USER', 'username'),
+                password=os.getenv('DB_PASSWORD', 'password'),
+                database=os.getenv('DB_NAME', 'loginDB'),
+            )
+    except mysql.connector.Error:
+        return {'message': 'Database connection failed'}, 503
+
+    cursor = None
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            INSERT INTO pokemon (pokemon_name, pokemon_wins, pokemon_losses)
+            VALUES (%s, 0, 1)
+            ON DUPLICATE KEY UPDATE pokemon_losses = pokemon_losses + 1
+            """,
+            (pokemon_name,),
+        )
+        db.commit()
+
+    except mysql.connector.Error:
+        db.rollback()
+        app.logger.exception("Could not update Pokemon losses for %s", pokemon_name)
+        return {'message': 'Could not update pokemon losses because of a database error'}, 503
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        db.close()
+
+    return {'message': 'pokemon losses updated successfully'}, 200
+
+@app.route("/add_win", methods=["POST"])
+def add_win():
+    payload = request.get_json(silent=True)
+    pokemon_name = payload.get("pokemon_name") if isinstance(payload, dict) else None
+    if not isinstance(pokemon_name, str) or not pokemon_name.strip():
+        return {"message": "Pokemon name is required"}, 400
+    pokemon_name = pokemon_name.strip().lower()
+    try:
+            db = mysql.connector.connect(
+                host=os.getenv('DB_HOST', '127.0.0.1'),
+                port=DB_PORT,
+                user=os.getenv('DB_USER', 'username'),
+                password=os.getenv('DB_PASSWORD', 'password'),
+                database=os.getenv('DB_NAME', 'loginDB'),
+            )
+    except mysql.connector.Error:
+        return {'message': 'Database connection failed'}, 503
+
+    cursor = None
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            """
+            INSERT INTO pokemon (pokemon_name, pokemon_wins, pokemon_losses)
+            VALUES (%s, 1, 0)
+            ON DUPLICATE KEY UPDATE pokemon_wins = pokemon_wins + 1
+            """,
+            (pokemon_name,),
+        )
+        db.commit()
+
+    except mysql.connector.Error:
+        db.rollback()
+        app.logger.exception("Could not update Pokemon wins for %s", pokemon_name)
+        return {'message': 'Could not update pokemon wins because of a database error'}, 503
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        db.close()
+
+    return {'message': 'pokemon wins updated successfully'}, 200
+
+
+@app.route("/get_winsandlosses", methods=["GET"])
+def get_winsandlosses():
+    pokemon_name = request.args.get("pokemon_name", "").strip().lower()
+    if not pokemon_name:
+        return {"message": "Pokemon name is required"}, 400
+
+    try:
+        db = mysql.connector.connect(
+            host=os.getenv('DB_HOST', '127.0.0.1'),
+            port=DB_PORT,
+            user=os.getenv('DB_USER', 'username'),
+            password=os.getenv('DB_PASSWORD', 'password'),
+            database=os.getenv('DB_NAME', 'loginDB'),
+        )
+    except mysql.connector.Error:
+        return {'message': 'Database connection failed'}, 503
+    cursor = None
+    try:
+        cursor = db.cursor()
+        cursor.execute(
+            "SELECT pokemon_wins, pokemon_losses FROM pokemon WHERE pokemon_name = %s",
+            (pokemon_name,),
+        )
+        row = cursor.fetchone()
+        wins, losses = row if row is not None else (0, 0)
+        return jsonify(wins=wins, losses=losses)
+    except mysql.connector.Error:
+        app.logger.exception("Could not load wins/losses for pokemon: %s", pokemon_name)
+        return {'message': 'Could not load the wins/losses because of a database error'}, 503
+    finally:
+        if cursor is not None:
+            cursor.close()
+        db.close()
 
 @app.route('/load_team', methods=['GET'])
 def load_team():

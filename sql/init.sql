@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS saved_teams (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-
-INSERT INTO users (username, password_hash)
-SELECT 'admin', 'scrypt:32768:8:1$ZG2HuAhWQFkPND8D$c4185ecd2c8af4ac2977d8e8621e81c28bdf0ea8afc4d3196e8a663b62572618a64da6a78b410d847bc96f5450955d5eb06cf42b68f828fbd007795d93de1e58'
-WHERE NOT EXISTS (
-    SELECT 1 FROM users WHERE username = 'admin'
+CREATE TABLE IF NOT EXISTS pokemon (
+    pokemon_name varchar(255) PRIMARY KEY,
+    pokemon_wins INT NOT NULL,
+    pokemon_losses INT NOT NULL
 );
+

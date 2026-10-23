@@ -19,7 +19,9 @@ services:
       retries: 10
 
   web:
-    build: .
+    build:
+      context: .
+      dockerfile: dockerfile
     depends_on:
       db:
         condition: service_healthy

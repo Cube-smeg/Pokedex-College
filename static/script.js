@@ -14,17 +14,35 @@ function showMessage(element, message) {
     element.textContent = message;
 }
 
+// Keep API data with each card.
+const pokemonDetails = new WeakMap();
+
+// Logout functionality
+const logoutButton = document.getElementById("logout");
+logoutButton?.addEventListener("click", () => {
+    window.location.href = "/logout";
+});
+
 // Display Pokemon data in the specified container
 
-function displayPokemon(data, container) {
+async function displayPokemon(data, container) {
     const nameElements = container.querySelectorAll(".pokemon-name");
     const idElements = container.querySelectorAll(".pokemon-id");
     const typeElements = container.querySelectorAll(".pokemon-types");
     const imageElements = container.querySelectorAll(".pokemon-image");
 
-    container.querySelectorAll(".Strengths, .Weaknesses").forEach((element) => {
-        element.textContent = "—";
-    });
+    const response = await fetch(
+        `/get_winsandlosses?pokemon_name=${encodeURIComponent(data.name)}`
+    );
+    if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}`);
+    }
+
+    const { wins, losses } = await response.json();
+    const games = wins + losses;
+    const winRate = games === 0 ? 0 : (wins / games) * 100;
+    container.querySelector(".Strengths").textContent = `${winRate.toFixed(1)}%`;
+    container.querySelector(".Weaknesses").textContent = games;
 
     nameElements.forEach((element) => {
         element.textContent = data.name.toUpperCase();
@@ -62,6 +80,8 @@ function displayPokemon(data, container) {
             });
         }
     }
+
+    pokemonDetails.set(container, data);
 }
 
 // Load Pokemon data and handle errors
@@ -70,7 +90,7 @@ async function loadPokemon(url, container, message) {
     showMessage(message, "Loading...");
 
     try {
-        displayPokemon(await fetchData(url), container);
+        await displayPokemon(await fetchData(url), container);
         showMessage(message, "");
     } catch (error) {
         showMessage(message, error.message);
@@ -161,7 +181,7 @@ rightRandomizeButton?.addEventListener("click", () => {
 
 
 const battleButton = document.getElementById("battle-button");
-battleButton?.addEventListener("click", () => {
+battleButton?.addEventListener("click", async () => {
     const leftPokemonName = document.querySelector("#compare-box .pokemon-name")?.textContent.trim().toLowerCase();
     const rightPokemonName = document.querySelector("#comparison-box .pokemon-name")?.textContent.trim().toLowerCase();
 
@@ -190,26 +210,63 @@ battleButton?.addEventListener("click", () => {
     explosionContainer.classList.add("create-explosion");
 
     // check who wins and show the user, maybe make it add to database to show winrates later on
-    Promise.all([fetchData(leftPokemonUrl), fetchData(rightPokemonUrl)])
-        .then(([leftData, rightData]) => {
-            const leftTotalStats = leftData.stats.reduce((sum, stat) => sum + stat.base_stat, 0);
-            const rightTotalStats = rightData.stats.reduce((sum, stat) => sum + stat.base_stat, 0);
+    try {
+        const [leftData, rightData] = await Promise.all([
+            fetchData(leftPokemonUrl),
+            fetchData(rightPokemonUrl),
+        ]);
+        const leftTotalStats = leftData.stats.reduce((sum, stat) => sum + stat.base_stat, 0);
+        const rightTotalStats = rightData.stats.reduce((sum, stat) => sum + stat.base_stat, 0);
 
-            let resultMessage;
-            if (leftTotalStats > rightTotalStats) {
-                resultMessage = `${leftData.name.toUpperCase()} wins!`;
-            } else if (leftTotalStats < rightTotalStats) {
-                resultMessage = `${rightData.name.toUpperCase()} wins!`;
-            } else {
-                resultMessage = "It's a tie!";
+        let resultMessage;
+        let winnerName;
+        let loserName;
+        if (leftTotalStats > rightTotalStats) {
+            resultMessage = `${leftData.name.toUpperCase()} wins!`;
+            winnerName = leftPokemonName;
+            loserName = rightPokemonName;
+        } else if (leftTotalStats < rightTotalStats) {
+            resultMessage = `${rightData.name.toUpperCase()} wins!`;
+            winnerName = rightPokemonName;
+            loserName = leftPokemonName;
+        } else {
+            resultMessage = "It's a tie!";
+        }
+
+        if (winnerName && loserName) {
+            const responses = await Promise.all([
+                fetch("/add_win", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pokemon_name: winnerName }),
+                }),
+                fetch("/add_loss", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pokemon_name: loserName }),
+                }),
+            ]);
+            if (responses.some((response) => !response.ok)) {
+                throw new Error("Could not save the battle result.");
             }
 
-            alert(resultMessage);
-        })
-        .catch((error) => {
-            alert(`Error fetching Pokemon data: ${error.message}`);
-        });
+            await Promise.all([
+                displayPokemon(leftData, originalBox),
+                displayPokemon(rightData, comparisonBox),
+            ]);
+        }
 
+        //move boxes back and remove explosion
+        leftpokemonimage.classList.toggle("battle-move-left");
+        rightpokemonimage.classList.toggle("battle-move-right");
+        explosionContainer.classList.remove("create-explosion");
+
+
+
+        alert(resultMessage);
+    } catch (error) {
+        alert(`Battle failed: ${error.message}`);
+    }
 });
 
 // Team builder selection
@@ -350,3 +407,62 @@ async function loadTeam() {
         alert(`Error loading team: ${error.message}`);
     }
 }
+
+
+const pokemonModal = document.getElementById("pokemon-modal");
+const pokemonModalTitle = document.getElementById("pokemon-modal-title");
+const pokemonModalAbilities = document.getElementById("pokemon-modal-abilities");
+const pokemonModalMoves = document.getElementById("pokemon-modal-moves");
+
+// Add detail items to the pop up thing.
+function populateDetailsList(list, items, remainingCount = 0) {
+    list.replaceChildren();
+    items.forEach((item) => {
+        const entry = document.createElement("li");
+        entry.textContent = item;
+        list.append(entry);
+    });
+
+    if (remainingCount > 0) {
+        const entry = document.createElement("li");
+        entry.textContent = `And ${remainingCount} more`;
+        entry.className = "pokemon-modal-more";
+        list.append(entry);
+    }
+}
+
+document.querySelectorAll(".pokemon-details-button").forEach((button) => {
+    button.addEventListener("click", () => {
+        const container = button.closest(".pokemon-container");
+        const data = container && pokemonDetails.get(container);
+        if (!pokemonModal || !pokemonModalTitle || !pokemonModalAbilities || !pokemonModalMoves) {
+            return;
+        }
+        if (!data) {
+            alert("Search for a Pokémon first to see its details.");
+            return;
+        }
+        // i love ai 
+        pokemonModalTitle.textContent = `${data.name.toUpperCase()} details`;
+        populateDetailsList(
+            pokemonModalAbilities,
+            data.abilities.map(({ ability }) => ability.name.replaceAll("-", " ")),
+        );
+        populateDetailsList(
+            pokemonModalMoves,
+            data.moves.slice(0, 12).map(({ move }) => move.name.replaceAll("-", " ")),
+            Math.max(0, data.moves.length - 12),
+        );
+        pokemonModal.showModal();
+    });
+});
+
+pokemonModal?.querySelector(".pokemon-modal-close")?.addEventListener("click", () => {
+    pokemonModal.close();
+});
+
+pokemonModal?.addEventListener("click", (event) => {
+    if (event.target === pokemonModal) {
+        pokemonModal.close();
+    }
+});
